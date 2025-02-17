@@ -43,14 +43,6 @@ static const uint8_t rsbox[256] = {
 };
 static const uint8_t rcon[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 
-void add_round_key(uint8_t *data, uint8_t *key);
-void sub_bytes(uint8_t *state);
-void shift_rows(uint8_t *state);
-void mix_columns(uint8_t *state);
-void inv_shift_rows(uint8_t *state);
-void inv_sub_bytes(uint8_t *state);
-void inv_mix_columns(uint8_t *state);
-
 // Cấu trúc AES256
 typedef struct {
     uint8_t round_keys[240]; // Lưu trữ các khóa vòng
@@ -274,38 +266,4 @@ void inv_mix_columns(uint8_t *state) {
         state[i * 4 + 2] = gmul(t[0], 0x0d) ^ gmul(t[1], 0x09) ^ gmul(t[2], 0x0e) ^ gmul(t[3], 0x0b);
         state[i * 4 + 3] = gmul(t[0], 0x0b) ^ gmul(t[1], 0x0d) ^ gmul(t[2], 0x09) ^ gmul(t[3], 0x0e);
     }
-}
-
-int main() {
-    uint8_t key[32] = { 
-        0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
-        0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
-        0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
-        0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4
-    };
-    uint8_t plaintext[16] = { 
-        0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d,
-        0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34
-    };
-    uint8_t ciphertext[16] = {0};
-    uint8_t decryptedtext[16] = {0};
-    
-    AES256 aes;
-    key_expansion(aes.round_keys, key);
-
-    printf("Plaintext: ");
-    for (int i = 0; i < 16; ++i) printf("%02x ", plaintext[i]);
-    printf("\n");
-
-    encrypt(plaintext, ciphertext, aes.round_keys);
-    printf("Ciphertext: ");
-    for (int i = 0; i < 16; ++i) printf("%02x ", ciphertext[i]);
-    printf("\n");
-
-    decrypt(ciphertext, decryptedtext, aes.round_keys);
-    printf("Decrypted: ");
-    for (int i = 0; i < 16; ++i) printf("%02x ", decryptedtext[i]);
-    printf("\n");
-    
-    return 0;
 }
