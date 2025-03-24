@@ -1,0 +1,41 @@
+# ESP-IDF build artifacts
+build/
+sdkconfig
+sdkconfig.old
+
+# Generated files
+*.o
+*.a
+*.bin
+*.elf
+*.map
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Python virtual environment (used by ESP-IDF)
+python_env/
+__pycache__/
+*.pyc
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and debug files
+*.log
+monitor/
+
+# Sensitive data (uncomment if needed)
+# credentials.h
+# wifi_config.h
+
+# macOS-specific
+.DS_Store
+
+# Windows-specific
+Thumbs.db
