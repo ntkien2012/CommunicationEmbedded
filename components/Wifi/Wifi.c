@@ -162,7 +162,6 @@ int wifi_transmit(const uint8_t* data, uint16_t len) {
     return sent;
 }
 
-// Function to receive UDP data and decode it into 7-bit integer array
 int wifi_receive(uint8_t* buffer, uint16_t max_len, uint8_t* array_out, uint16_t* array_len) {
     if (wifi_socket < 0) {
         ESP_LOGE(TAG, "UDP socket not initialized");
@@ -172,6 +171,7 @@ int wifi_receive(uint8_t* buffer, uint16_t max_len, uint8_t* array_out, uint16_t
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
     int received = recvfrom(wifi_socket, buffer, max_len, 0, (struct sockaddr*)&source_addr, &socklen);
+    
     if (received < 0) {
         ESP_LOGE(TAG, "Failed to receive UDP data: %d", errno);
         return -1;
@@ -186,44 +186,43 @@ int wifi_receive(uint8_t* buffer, uint16_t max_len, uint8_t* array_out, uint16_t
         (unsigned int)((ip >> 24) & 0xFF),
         (unsigned int)ntohs(source_addr.sin_port));
 
-    // Decode 7-bit data into array
-    if (received < 2) { // At least 2 bytes are required for the length
-        ESP_LOGE(TAG, "Received data too short");
+    // Check if we received any data
+    if (received <= 0) {
+        ESP_LOGE(TAG, "No data received");
         return -1;
     }
 
-    // Get the number of elements from the first 2 bytes
-    uint16_t num_elements = *(uint16_t*)buffer;
-    if (num_elements > *array_len) { // Check if the output array has enough space
-        ESP_LOGE(TAG, "Array output too small: %d > %d", num_elements, *array_len);
+    // Check if the received data exceeds our output buffer size
+    if (received > *array_len) {
+        ESP_LOGW(TAG, "Received data exceeds output buffer size (%d > %d), truncating", 
+                received, *array_len);
+        received = *array_len;
+    }
+
+    // Check if received data is at least 2 bytes (for potential header)
+    if (received < 2) {
+        ESP_LOGE(TAG, "Received packet too small (< 2 bytes)");
         return -1;
     }
 
-    // Decrypt data
-    uint8_t* data = buffer + 2; // Skip first 2 bytes
-    int byte_len = received - 2; // Actual data length
-    uint32_t temp = 0;          // Temporary variable to accumulate bits
-    int bits = 0;               // Number of bits accumulated
-    int element_count = 0;      // Count the number of decoded elements
-
-    for (int i = 0; i < byte_len && element_count < num_elements; i++) {
-        temp |= (uint32_t)data[i] << bits; // Add bytes to temp
-        bits += 8;
-        while (bits >= 7 && element_count < num_elements) {
-            array_out[element_count] = temp & 0x7F; // Take the lowest 7 bits
-            temp >>= 7;                            // Right shift 7 bits
-            bits -= 7;
-            element_count++;
-        }
+    // Check if this is a multi-packet transmission from Python
+    // The second byte (total_packets) should be > 0 and 
+    // the first byte (packet_index) should be < total_packets
+    uint8_t packet_index = buffer[0];
+    uint8_t total_packets = buffer[1];
+    
+    if (total_packets > 0 && packet_index < total_packets) {
+        ESP_LOGI(TAG, "Packet %d/%d received", packet_index + 1, total_packets);
+        
+        // Copy actual data (skip the 2-byte header)
+        memcpy(array_out, buffer + 2, received - 2);
+        *array_len = received - 2;
+        return received - 2;
+    } 
+    // Otherwise, just copy the data directly
+    else {
+        memcpy(array_out, buffer, received);
+        *array_len = received;
+        return received;
     }
-
-    // Check if there is not enough data to decode all the elements
-    if (element_count < num_elements) {
-        ESP_LOGE(TAG, "Not enough data to decode %d elements (got %d)", num_elements, element_count);
-        return -1;
-    }
-
-    // Update output array length
-    *array_len = num_elements;
-    return num_elements; // Returns the number of elements in the array
 }

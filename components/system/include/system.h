@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "AES256.h"
 #include "Bit_Message.h"
-#include "HammingCode.h"
+#include "LDPC.h"
 #include "MAVLink.h"
 #include "Wifi.h"
 

@@ -1,18 +1,53 @@
-Project Overview: Secure WiFi Data Communication with ESP32
-This project focuses on securely transmitting data between a PC and an ESP32 microcontroller over a WiFi connection. It integrates AES-256 encryption for data security, BitMess for additional obfuscation, MAVLink for structured messaging, and Hamming(7,4) channel coding for error correction, ensuring reliable and confidential communication in a wireless environment.
+# Secure WiFi Data Communication with ESP32
 
-Key Components and Features
-ESP32 WiFi Communication:
-Utilizes the ESP32’s built-in WiFi capabilities to establish a wireless link between the PC and the ESP32.
-Suitable for real-time data exchange in embedded systems.
-MAVLink Messaging Protocol:
-Implements the lightweight MAVLink protocol to structure and standardize data packets exchanged between the PC and ESP32.
-Ensures compatibility with MAVLink-based systems, commonly used in drones and robotics.
-AES-256 Encryption:
-Applies AES-256, an industry-standard encryption algorithm, to protect the confidentiality of transmitted data.
-Ensures that only authorized devices with the correct key can decrypt and access the information.
-BitMess (Bit Manipulation):
-Adds a layer of bit-level transformation to the encrypted data, enhancing obfuscation and potentially aiding compliance with specific transmission protocols.
-Hamming(7,4) Channel Coding:
-Incorporates Hamming(7,4) error-correcting code to detect and correct single-bit errors during transmission.
-Enhances reliability over WiFi, which may be susceptible to interference or packet loss.
+This project implements a robust, secure link between a PC and an ESP32 microcontroller over WiFi, combining industry-standard encryption with lightweight channel coding and structured messaging to ensure both confidentiality and reliability in embedded applications.
+
+## Key Components and Features
+
+### 1. ESP32 WiFi Communication  
+- Leverages the ESP32’s built-in WiFi to form a bi-directional, real-time data link.  
+- Ideal for embedded and IoT scenarios where cable-free connectivity is required.
+
+### 2. MAVLink Messaging Protocol  
+- Uses the MAVLink v2 protocol to frame and parse every packet.  
+- Guarantees interoperability with MAVLink-based ground stations and autopilots (common in drones & robotics).
+
+### 3. AES-256 Encryption  
+- Applies AES-256 in CBC mode (configurable IV) for payload confidentiality.  
+- Only devices with the correct 256-bit key can decrypt and read the data.
+
+### 4. BitMess Obfuscation  
+- Introduces a bit-level scrambling step after encryption to thwart simple traffic analysis.  
+- Compatible with any underlying transport—adds negligible latency.
+
+### 5. LDPC Channel Coding with Bit-Flipping Decoder  
+- Replaces the previous Hamming(7,4) block code with a modern **Low-Density Parity-Check (LDPC)** code.  
+- Encodes each packet with an LDPC parity-check matrix and decodes on the ESP32 using a hard-decision **Bit-Flipping** algorithm:  
+  - **Static phase**: flips all bits whose unsatisfied-check count exceeds a per-bit threshold.  
+  - **Dynamic phase**: if no static flips occur, flips one bit at a time (highest syndrome count).  
+- Corrects single and multiple errors efficiently, yielding much higher resilience to WiFi interference than Hamming.
+
+---
+
+## Workflow Overview
+
+1. **PC Side**  
+   - Payload → AES-256 encrypt → BitMess scramble → MAVLink framing → LDPC encode → WiFi send  
+
+2. **ESP32 Side**  
+   - WiFi receive → LDPC Bit-Flip decode → MAVLink parse → BitMess descramble → AES-256 decrypt → Application  
+
+---
+
+## Benefits
+
+- **Security**: AES-256 + BitMess ensures confidentiality and obfuscation.  
+- **Reliability**: LDPC with Bit-Flipping corrects errors from noisy WiFi links.  
+- **Interoperability**: MAVLink framing fits into existing UAV/robotics ecosystems.  
+- **Performance**: All operations run in real time on the ESP32 with minimal overhead.
+
+---
+
+## Getting Started
+
+See [INSTALL.md](INSTALL.md) for setup steps, and [CODE.md](CODE.md) for build & run instructions.
