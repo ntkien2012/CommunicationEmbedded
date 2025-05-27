@@ -1,0 +1,9 @@
+../Middlewares/MAVLink/MAVLinkV1.c:6:6:crc_accumulate	24	static
+../Middlewares/MAVLink/MAVLinkV1.c:13:6:crc_init	16	static
+../Middlewares/MAVLink/MAVLinkV1.c:18:10:crc_calculate	24	static
+../Middlewares/MAVLink/MAVLinkV1.c:28:6:crc_accumulate_buffer	24	static
+../Middlewares/MAVLink/MAVLinkV1.c:35:6:mavlink_start_checksum	16	static
+../Middlewares/MAVLink/MAVLinkV1.c:40:6:mavlink_update_checksum	16	static
+../Middlewares/MAVLink/MAVLinkV1.c:45:5:mavlink_encode	24	static
+../Middlewares/MAVLink/MAVLinkV1.c:89:5:mavlink_decode	40	static
+../Middlewares/MAVLink/MAVLinkV1.c:203:6:mavlink_parse_byte	32	static

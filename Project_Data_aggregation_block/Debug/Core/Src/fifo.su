@@ -1,4 +1,0 @@
-../Core/Src/fifo.c:10:6:fifo_init	16	static
-../Core/Src/fifo.c:14:6:fifo_push	24	static
-../Core/Src/fifo.c:22:6:fifo_pop	16	static
-../Core/Src/fifo.c:29:6:fifo_is_empty	16	static

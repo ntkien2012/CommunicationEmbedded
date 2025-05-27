@@ -1,0 +1,5 @@
+../Core/Src/freertos.c:139:6:MX_FREERTOS_Init	8	static
+../Core/Src/freertos.c:194:6:StartDefaultTask	16	static
+../Core/Src/freertos.c:212:6:StartUART1Task	232	static
+../Core/Src/freertos.c:254:6:StartUART2Task	232	static
+../Core/Src/freertos.c:291:6:StartUART3Task	152	static

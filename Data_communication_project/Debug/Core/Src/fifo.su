@@ -1,0 +1,4 @@
+../Core/Src/fifo.c:10:6:FIFO_Init	24	static
+../Core/Src/fifo.c:18:10:FIFO_Write	32	static
+../Core/Src/fifo.c:29:10:FIFO_Read	32	static
+../Core/Src/fifo.c:41:10:FIFO_Available	16	static
