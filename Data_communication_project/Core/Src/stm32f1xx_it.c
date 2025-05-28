@@ -40,6 +40,9 @@ extern TaskHandle_t UART1TaskHandle;
 extern TaskHandle_t UART2TaskHandle;
 
 /* USER CODE END Includes */
+#include "semphr.h"
+extern SemaphoreHandle_t xUART1Sem;
+extern SemaphoreHandle_t xUART2Sem;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
@@ -251,7 +254,8 @@ void USART1_IRQHandler(void)
 
 	      if (UART1TaskHandle != NULL) {
 	          BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	          vTaskNotifyGiveFromISR(UART1TaskHandle, &xHigherPriorityTaskWoken);
+//	          vTaskNotifyGiveFromISR(UART1TaskHandle, &xHigherPriorityTaskWoken);
+	          xSemaphoreGiveFromISR(xUART1Sem, &xHigherPriorityTaskWoken);
 	          portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	      }
 	    }
@@ -287,7 +291,8 @@ void USART2_IRQHandler(void)
 
       if (UART2TaskHandle != NULL) {
           BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-          vTaskNotifyGiveFromISR(UART2TaskHandle, &xHigherPriorityTaskWoken);
+//          vTaskNotifyGiveFromISR(UART2TaskHandle, &xHigherPriorityTaskWoken);
+          xSemaphoreGiveFromISR(xUART2Sem, &xHigherPriorityTaskWoken);
           portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
       }
     }

@@ -29,3 +29,15 @@ B. Project Structure
 dma.c, gpio.c, usart.c, etc.
 => Peripheral initialization and hardware configuration.
 
+4. MAVLink V1 data packaging scripts for testing block operation:
+- mavlink_send_UART1.py for UART1
+- mavlink_send.py for UART2
+
+
+
+
+
+
+
+
+

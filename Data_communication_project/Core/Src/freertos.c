@@ -42,6 +42,9 @@ typedef struct {
   uint8_t data[128];
   uint16_t len;
 } QUEUE_t;
+#include "semphr.h"
+SemaphoreHandle_t xUART1Sem;
+SemaphoreHandle_t xUART2Sem;
 
 /* USER CODE END PTD */
 
@@ -73,7 +76,7 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* Definitions for UART1Task */
 osThreadId_t UART1TaskHandle;
-uint32_t UART1TaskBuffer[ 128 ];
+uint32_t UART1TaskBuffer[ 256 ];
 osStaticThreadDef_t UART1TaskControlBlock;
 const osThreadAttr_t UART1Task_attributes = {
   .name = "UART1Task",
@@ -85,7 +88,7 @@ const osThreadAttr_t UART1Task_attributes = {
 };
 /* Definitions for UART2Task */
 osThreadId_t UART2TaskHandle;
-uint32_t UART2TaskBuffer[ 128 ];
+uint32_t UART2TaskBuffer[ 256 ];
 osStaticThreadDef_t UART2TaskControlBlock;
 const osThreadAttr_t UART2Task_attributes = {
   .name = "UART2Task",
@@ -97,7 +100,7 @@ const osThreadAttr_t UART2Task_attributes = {
 };
 /* Definitions for UART3Task */
 osThreadId_t UART3TaskHandle;
-uint32_t UART3TaskBuffer[ 128 ];
+uint32_t UART3TaskBuffer[ 256 ];
 osStaticThreadDef_t UART3TaskControlBlock;
 const osThreadAttr_t UART3Task_attributes = {
   .name = "UART3Task",
@@ -177,7 +180,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
+  xUART1Sem = xSemaphoreCreateBinary();
+  xUART2Sem = xSemaphoreCreateBinary();
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
@@ -215,11 +219,12 @@ void StartUART1Task(void *argument)
     static mavlink_state_t mav_state = MAVLINK_STATE_IDLE;
     QUEUE_t msg;
     uint8_t byte;
-    uint32_t ulNotificationValue = 0;
+//    uint32_t ulNotificationValue = 0;
 
     for (;;)
     {
-        xTaskNotifyWait(0x00, 0xFFFFFFFF, &ulNotificationValue, portMAX_DELAY);
+//        xTaskNotifyWait(0x00, 0xFFFFFFFF, &ulNotificationValue, portMAX_DELAY);
+    	xSemaphoreTake(xUART1Sem, portMAX_DELAY);
 
         do {
             int available = FIFO_Available(&uart1_fifo);
@@ -253,16 +258,16 @@ void StartUART1Task(void *argument)
 /* USER CODE END Header_StartUART2Task */
 void StartUART2Task(void *argument)
 {
-
     static mavlink_message_t mav_msg;
     static mavlink_state_t mav_state = MAVLINK_STATE_IDLE;
     QUEUE_t msg;
     uint8_t byte;
-    uint32_t ulNotificationValue = 0;
+//    uint32_t ulNotificationValue = 0;
 
     for (;;)
     {
-        xTaskNotifyWait(0x00, 0xFFFFFFFF, &ulNotificationValue, portMAX_DELAY);
+//        xTaskNotifyWait(0x00, 0xFFFFFFFF, &ulNotificationValue, portMAX_DELAY);
+    	xSemaphoreTake(xUART2Sem, portMAX_DELAY);
 
         do {
             int available = FIFO_Available(&uart2_fifo);
