@@ -39,12 +39,13 @@ typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
 /* USER CODE BEGIN PTD */
 typedef struct {
-  uint8_t data[128];
+  uint8_t data[300];
   uint16_t len;
 } QUEUE_t;
 #include "semphr.h"
 SemaphoreHandle_t xUART1Sem;
 SemaphoreHandle_t xUART2Sem;
+SemaphoreHandle_t xUART3TxDoneSem; // Semaphore for UART3
 
 /* USER CODE END PTD */
 
@@ -76,7 +77,7 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* Definitions for UART1Task */
 osThreadId_t UART1TaskHandle;
-uint32_t UART1TaskBuffer[ 256 ];
+uint32_t UART1TaskBuffer[ 300 ];
 osStaticThreadDef_t UART1TaskControlBlock;
 const osThreadAttr_t UART1Task_attributes = {
   .name = "UART1Task",
@@ -88,7 +89,7 @@ const osThreadAttr_t UART1Task_attributes = {
 };
 /* Definitions for UART2Task */
 osThreadId_t UART2TaskHandle;
-uint32_t UART2TaskBuffer[ 256 ];
+uint32_t UART2TaskBuffer[ 300 ];
 osStaticThreadDef_t UART2TaskControlBlock;
 const osThreadAttr_t UART2Task_attributes = {
   .name = "UART2Task",
@@ -100,7 +101,7 @@ const osThreadAttr_t UART2Task_attributes = {
 };
 /* Definitions for UART3Task */
 osThreadId_t UART3TaskHandle;
-uint32_t UART3TaskBuffer[ 256 ];
+uint32_t UART3TaskBuffer[ 300 ];
 osStaticThreadDef_t UART3TaskControlBlock;
 const osThreadAttr_t UART3Task_attributes = {
   .name = "UART3Task",
@@ -112,7 +113,7 @@ const osThreadAttr_t UART3Task_attributes = {
 };
 /* Definitions for UARTQueue */
 osMessageQueueId_t UARTQueueHandle;
-uint8_t UARTQueueBuffer[ 32 * sizeof( QUEUE_t ) ];
+uint8_t UARTQueueBuffer[ 16 * sizeof( QUEUE_t ) ];
 osStaticMessageQDef_t UARTQueueControlBlock;
 const osMessageQueueAttr_t UARTQueue_attributes = {
   .name = "UARTQueue",
@@ -182,6 +183,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_THREADS */
   xUART1Sem = xSemaphoreCreateBinary();
   xUART2Sem = xSemaphoreCreateBinary();
+  xUART3TxDoneSem = xSemaphoreCreateBinary();
+
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
@@ -235,9 +238,7 @@ void StartUART1Task(void *argument)
                 if (mavlink_parse_byte(&mav_state, &mav_msg, byte))
                 {
                     int payload_len = mav_msg.len;
-                    if (payload_len > sizeof(msg.data) - 32) payload_len = sizeof(msg.data) - 32;
-
-                    char payload_str[64];
+                    char payload_str[256];
                     memcpy(payload_str, mav_msg.payload, payload_len);
                     payload_str[payload_len] = '\0';
 
@@ -278,9 +279,7 @@ void StartUART2Task(void *argument)
                 if (mavlink_parse_byte(&mav_state, &mav_msg, byte))
                 {
                     int payload_len = mav_msg.len;
-                    if (payload_len > sizeof(msg.data) - 32) payload_len = sizeof(msg.data) - 32;
-
-                    char payload_str[64];
+                    char payload_str[256];
                     memcpy(payload_str, mav_msg.payload, payload_len);
                     payload_str[payload_len] = '\0';
 
@@ -293,7 +292,21 @@ void StartUART2Task(void *argument)
 }
 
 
-void StartUART3Task(void *argument)
+//void StartUART3Task(void *argument)
+//{
+//    QUEUE_t msg;
+//
+//    for (;;)
+//    {
+//        if (osMessageQueueGet(UARTQueueHandle, &msg, NULL, osWaitForever) == osOK)
+//        {
+//            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // test hoạt động
+//            HAL_UART_Transmit(&huart3, msg.data, msg.len, 50);
+//        }
+//    }
+//}
+
+void StartUART3Task(void *argument) // StartUART3 Transmit with DMA
 {
     QUEUE_t msg;
 
@@ -301,11 +314,16 @@ void StartUART3Task(void *argument)
     {
         if (osMessageQueueGet(UARTQueueHandle, &msg, NULL, osWaitForever) == osOK)
         {
-            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // test hoạt động
-            HAL_UART_Transmit(&huart3, msg.data, msg.len, 50);
+            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // Kiểm tra hoạt động
+            if (HAL_UART_Transmit_DMA(&huart3, msg.data, msg.len) == HAL_OK)
+            {
+                // Đợi DMA TX xong bằng semaphore
+                xSemaphoreTake(xUART3TxDoneSem, portMAX_DELAY);
+            }
         }
     }
 }
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 

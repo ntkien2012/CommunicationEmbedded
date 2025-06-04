@@ -1,5 +1,5 @@
-../Core/Src/freertos.c:142:6:MX_FREERTOS_Init	8	static
-../Core/Src/freertos.c:198:6:StartDefaultTask	16	static
-../Core/Src/freertos.c:216:6:StartUART1Task	232	static
-../Core/Src/freertos.c:259:6:StartUART2Task	232	static
-../Core/Src/freertos.c:296:6:StartUART3Task	152	static
+../Core/Src/freertos.c:143:6:MX_FREERTOS_Init	8	static
+../Core/Src/freertos.c:201:6:StartDefaultTask	16	static
+../Core/Src/freertos.c:219:6:StartUART1Task	592	static
+../Core/Src/freertos.c:260:6:StartUART2Task	592	static
+../Core/Src/freertos.c:309:6:StartUART3Task	320	static

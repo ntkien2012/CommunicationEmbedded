@@ -43,7 +43,7 @@ extern TaskHandle_t UART2TaskHandle;
 #include "semphr.h"
 extern SemaphoreHandle_t xUART1Sem;
 extern SemaphoreHandle_t xUART2Sem;
-
+extern SemaphoreHandle_t xUART3TxDoneSem;
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -77,6 +77,7 @@ extern SemaphoreHandle_t xUART2Sem;
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart3_tx;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -188,6 +189,11 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles DMA1 channel5 global interrupt.
   */
+void DMA1_Channel2_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart3_tx);
+}
+
 void DMA1_Channel5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
@@ -362,5 +368,15 @@ void EXTI15_10_IRQHandler(void)
 //        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 //    }
 //}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART3)
+    {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(xUART3TxDoneSem, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
 
 /* USER CODE END 1 */

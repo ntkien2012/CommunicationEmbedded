@@ -29,10 +29,9 @@ def x25_crc(data: bytes) -> int:
 def mavlink_pack(text: str) -> bytes:
     global SEQUENCE
 
-    # Chuẩn hóa payload: 56 byte cố định
-    payload_raw = text.encode('utf-8')[:56]
-    payload = payload_raw.ljust(56, b'\x00')  # Padding với 0x00
-    payload_len = len(payload)  # Luôn là 56
+    # Chuẩn hóa payload
+    payload = text.encode('utf-8')[:255]
+    payload_len = len(payload)  
 
     # MAVLink V1 header
     header = struct.pack(
@@ -53,15 +52,15 @@ def mavlink_pack(text: str) -> bytes:
     packet = bytearray()
     packet.append(MAVLINK_STX)             # 1 byte STX
     packet.extend(header)                  # 5 byte header
-    packet.extend(payload)                 # 56 byte payload
+    packet.extend(payload)                 # 0-255 byte payload
     packet.extend(struct.pack("<H", crc))  # 2 byte CRC
 
-    return packet  # Tổng cộng 64 byte
+    return packet 
 
 # =============================
 # Gửi dữ liệu tự động mỗi t giây
 # =============================
-message = "Hello from UART1"
+message = "Hello KHANH from UART1"
 interval = 1.0  # giây/gói
 
 try:

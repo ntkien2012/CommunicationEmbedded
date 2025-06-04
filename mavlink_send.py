@@ -30,10 +30,8 @@ def x25_crc(data: bytes) -> int:
 def mavlink_pack(text: str) -> bytes:
     global SEQUENCE
 
-    # Chuẩn hóa payload: 56 byte cố định
-    payload_raw = text.encode('utf-8')[:56]  # Giới hạn tối đa 56 byte
-    payload = payload_raw.ljust(56, b'\x00')  # Bổ sung 0x00 nếu thiếu
-    payload_len = len(payload)  # Luôn = 56
+    payload = text.encode('utf-8')[:255]  # Giới hạn tối đa 255 byte
+    payload_len = len(payload) 
 
     # MAVLink V1 header: len, seq, sysid, compid, msgid
     header = struct.pack(
@@ -50,14 +48,14 @@ def mavlink_pack(text: str) -> bytes:
     crc_input = header + payload
     crc = x25_crc(crc_input)
 
-    # Tạo packet hoàn chỉnh (64 byte)
+    # Tạo packet hoàn chỉnh
     packet = bytearray()
     packet.append(MAVLINK_STX)                   # 1 byte
     packet.extend(header)                        # 5 byte
-    packet.extend(payload)                       # 56 byte
+    packet.extend(payload)                       # 255 byte
     packet.extend(struct.pack("<H", crc))        # 2 byte
 
-    return packet  # Tổng cộng: 1 + 5 + 56 + 2 = 64 byte
+    return packet  
 
 # =============================
 # Gửi dữ liệu từ bàn phím
@@ -76,9 +74,9 @@ def mavlink_pack(text: str) -> bytes:
 #     print("\n[INFO] Đã thoát.")
 # finally:
 #     ser.close()
-message = "Hello from UART2"
+message = "Hello KHANH from UART2! Welcome to Project 1"
 
-interval = 1.0  # giây/gói
+interval = 0.5  # giây/gói
 
 try:
     while True:
@@ -90,4 +88,3 @@ except KeyboardInterrupt:
     print("\n[INFO] Đã thoát.")
 finally:
     ser.close()
-
